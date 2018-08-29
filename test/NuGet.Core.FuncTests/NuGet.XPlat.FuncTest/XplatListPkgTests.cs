@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Microsoft.Extensions.CommandLineUtils;
 using Moq;
 using NuGet.CommandLine.XPlat;
@@ -19,6 +20,44 @@ namespace NuGet.XPlat.FuncTest
         private static readonly string ProjectName = "test_project_listpkg";
 
         private static MSBuildAPIUtility MsBuild => new MSBuildAPIUtility(new TestCommandOutputLogger());
+
+        [Fact]
+        public async void DotnetListPackage_Succeed()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46");
+
+                var packageX = XPlatTestUtils.CreatePackage();
+
+                // Generate Package
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                var buildFixture = new XPlatMsbuildTestFixture();
+                var addResult = CommandRunner.Run(buildFixture._dotnetCli,
+                    Directory.GetParent(projectA.ProjectPath).FullName,
+                    $"add {projectA.ProjectPath} package packageX --version 1.0.0 --no-restore",
+                    waitForExit: true);
+                Assert.True(addResult.Success);
+
+                var restoreResult = CommandRunner.Run(buildFixture._dotnetCli,
+                    Directory.GetParent(projectA.ProjectPath).FullName,
+                    $"restore {projectA.ProjectName}.csproj",
+                    waitForExit: true);
+                Assert.True(restoreResult.Success);
+
+                var listResult = CommandRunner.Run(buildFixture._dotnetCli,
+                    Directory.GetParent(projectA.ProjectPath).FullName,
+                    $"list {projectA.ProjectPath} package",
+                    waitForExit: true);
+
+                Assert.True(ContainsIgnoringSpaces(listResult.AllOutput, "packageX1.0.01.0.0"));
+
+            }
+        }
 
         [Fact]
         public async void DotnetListPackage_NoRestore_Fail()
