@@ -141,12 +141,12 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Theory]
-        [InlineData("", "[.NETFramework,Version=v4.6]", null)]
-        [InlineData("", "[.NETFramework,Version=v4.5.1]", null)]
-        [InlineData("--framework net451 --framework net46", "[.NETFramework,Version=v4.6]", null)]
-        [InlineData("--framework net451 --framework net46", "[.NETFramework,Version=v4.5.1]", null)]
-        [InlineData("--framework net451", "[.NETFramework,Version=v4.5.1]", "[.NETFramework,Version=v4.6]")]
-        [InlineData("--framework net46", "[.NETFramework,Version=v4.6]", "[.NETFramework,Version=v4.5.1]")]
+        [InlineData("", "net46", null)]
+        [InlineData("", "net451", null)]
+        [InlineData("--framework net451 --framework net46", "net46", null)]
+        [InlineData("--framework net451 --framework net46", "net451", null)]
+        [InlineData("--framework net451", "net451", "net46")]
+        [InlineData("--framework net46", "net46", "net451")]
         public async void DotnetListPackage_FrameworkSpecific_Success(string args, string shouldInclude, string shouldntInclude)
         {
             using (var pathContext = new SimpleTestPathContext())
