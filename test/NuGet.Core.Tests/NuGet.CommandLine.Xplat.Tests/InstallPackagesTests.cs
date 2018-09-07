@@ -78,7 +78,7 @@ namespace NuGet.CommandLine.XPlat.Tests
 
                 var request = (await RestoreRunner.GetRequests(restoreContext)).Single();
                 var providers = providerCache.GetOrCreate(pathContext.UserPackagesFolder, sources, new List<SourceRepository>(), cacheContext, logger);
-                var command = new RestoreCommand(request.Request);
+                var command = new NuGet.Commands.RestoreCommand(request.Request);
 
                 // Add to cache before install on all providers
                 var globalPackages = providers.GlobalPackages;
