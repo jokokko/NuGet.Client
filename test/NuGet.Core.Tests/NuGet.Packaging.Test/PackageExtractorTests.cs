@@ -1921,6 +1921,9 @@ namespace NuGet.Packaging.Test
                     })
                 .ReturnsAsync(() => copiedFilePaths);
 
+            signedReader.Setup(x => x.GetContentHashForSignedPackage(It.IsAny<CancellationToken>()))
+                .Returns(string.Empty);
+
             var packageIdentity = new PackageIdentity(id: "a", version: NuGetVersion.Parse("1.0.0"));
 
             using (var testDirectory = TestDirectory.Create())
@@ -1993,6 +1996,9 @@ namespace NuGet.Packaging.Test
                         copiedFilePaths = new[] { copiedFilePath };
                     })
                 .ReturnsAsync(() => copiedFilePaths);
+
+            signedReader.Setup(x => x.GetContentHashForSignedPackage(It.IsAny<CancellationToken>()))
+                .Returns(string.Empty);
 
             var packageIdentity = new PackageIdentity(id: "a", version: NuGetVersion.Parse("1.0.0"));
 

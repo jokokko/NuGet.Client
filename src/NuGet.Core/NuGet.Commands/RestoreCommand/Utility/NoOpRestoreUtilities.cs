@@ -171,8 +171,10 @@ namespace NuGet.Commands
                     {
                         // Verify the SHA for each package
                         var hashPath = resolver.GetHashPath(library.Name, library.Version);
+                        var newHashPath = resolver.GetNewHashPath(library.Name, library.Version);
 
-                        if (request.DependencyProviders.PackageFileCache.Sha512Exists(hashPath))
+                        if (request.DependencyProviders.PackageFileCache.Sha512Exists(hashPath) ||
+                            request.DependencyProviders.PackageFileCache.Sha512Exists(newHashPath))
                         {
                             found = true;
 
