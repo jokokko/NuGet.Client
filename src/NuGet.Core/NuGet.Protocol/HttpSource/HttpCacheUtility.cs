@@ -72,7 +72,7 @@ namespace NuGet.Protocol
                 FileMode.Create,
                 FileAccess.ReadWrite,
                 FileShare.None,
-                BufferSize,
+                bufferSize: 1,
                 useAsync: true))
             {
                 using (var networkStream = await response.Content.ReadAsStreamAsync())
