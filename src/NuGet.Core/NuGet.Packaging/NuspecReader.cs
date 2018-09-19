@@ -423,15 +423,14 @@ namespace NuGet.Packaging
                 var src = licenseNode.Attribute(NuspecUtility.Src)?.Value;
                 var expression = licenseNode.Attribute(NuspecUtility.LicenseExpression)?.Value;
 
-                var expressionHasValue = string.IsNullOrEmpty(expression);
-                var isSrcNullOrEmpty = string.IsNullOrEmpty(src);
-                
-                if ( (expressionHasValue && isSrcNullOrEmpty) || (!expressionHasValue && !expressionHasValue))
-                {
+                var expressionHasValue = !string.IsNullOrEmpty(expression);
+                var srcHasValue = !string.IsNullOrEmpty(src);
 
-                    throw new PackagingException("Invalid nuspec entry. Only file or licensexpression can be specified.");
+                if (expressionHasValue ^ srcHasValue)
+                {
+                    return new LicenseMetadata(licenseExpression: expression, src: src);
                 }
-                return new LicenseMetadata(licenseExpression: expression, src: src);
+                throw new PackagingException("Invalid nuspec entry. Only file or licensexpression can be specified.");
             }
 
             return null;
