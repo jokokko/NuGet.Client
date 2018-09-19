@@ -51,7 +51,7 @@ namespace NuGet.Packaging
             // now check for required elements, which include <id>, <version>, <authors> and <description>
             foreach (var requiredElement in RequiredElements)
             {
-                if(requiredElement.Equals("authors") && manifestMetadata.PackageTypes.Contains(PackageType.SymbolsPackage))
+                if (requiredElement.Equals("authors") && manifestMetadata.PackageTypes.Contains(PackageType.SymbolsPackage))
                 {
                     continue;
                 }
@@ -146,6 +146,9 @@ namespace NuGet.Packaging
                     case "repository":
                         manifestMetadata.Repository = ReadRepository(element);
                         break;
+                    case "license":
+                        manifestMetadata.LicenseMetadata = ReadLicenseMetadata(element);
+                        break;
                 }
             }
             catch (Exception ex)
@@ -160,8 +163,28 @@ namespace NuGet.Packaging
                 {
                     throw new InvalidDataException(string.Format(NuGetResources.Manifest_PropertyValueReadFailure, value, element.Name.LocalName), ex);
                 }
-                
             }
+        }
+
+        private static LicenseMetadata ReadLicenseMetadata(XElement element)
+        {
+            if (!element.HasElements)
+            {
+                // TODO NK - Bad error message, but basically if the element exists, we need to 
+                throw new InvalidDataException(string.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_RequiredElementMissing, element));
+            }
+
+            var src = element.Attribute(NuspecUtility.Src)?.Value;
+            var expression = element.Attribute(NuspecUtility.LicenseExpression)?.Value;
+
+            var expressionHasValue = string.IsNullOrEmpty(expression);
+            var isSrcNullOrEmpty = string.IsNullOrEmpty(src);
+
+            if ((expressionHasValue && isSrcNullOrEmpty) || (!expressionHasValue && !expressionHasValue))
+            {
+                throw new PackagingException("Invalid nuspec entry. Only file or licensexpression can be specified.");
+            }
+            return new LicenseMetadata(licenseExpression: expression, src: src);
         }
 
         private static List<ManifestContentFiles> ReadContentFiles(XElement contentFilesElement)
@@ -307,16 +330,16 @@ namespace NuGet.Packaging
             // element is <dependency>
 
             var dependency = (from element in containerElement.ElementsNoNamespace("dependency")
-                    let idElement = element.Attribute("id")
-                    where idElement != null && !string.IsNullOrEmpty(idElement.Value)
-                    let elementVersion = element.GetOptionalAttributeValue("version")
-                    select new PackageDependency(
-                        idElement.Value?.Trim(),
-                        // REVIEW: There isn't a PackageDependency constructor that allows me to pass in an invalid version
-                        elementVersion == null ? null : VersionRange.Parse(elementVersion.Trim()),
-                        element.GetOptionalAttributeValue("include")?.Trim()?.Split(',').Select(a => a.Trim()).ToArray(),
-                        element.GetOptionalAttributeValue("exclude")?.Trim()?.Split(',').Select(a => a.Trim()).ToArray()
-                    )).ToList();
+                              let idElement = element.Attribute("id")
+                              where idElement != null && !string.IsNullOrEmpty(idElement.Value)
+                              let elementVersion = element.GetOptionalAttributeValue("version")
+                              select new PackageDependency(
+                                  idElement.Value?.Trim(),
+                                  // REVIEW: There isn't a PackageDependency constructor that allows me to pass in an invalid version
+                                  elementVersion == null ? null : VersionRange.Parse(elementVersion.Trim()),
+                                  element.GetOptionalAttributeValue("include")?.Trim()?.Split(',').Select(a => a.Trim()).ToArray(),
+                                  element.GetOptionalAttributeValue("exclude")?.Trim()?.Split(',').Select(a => a.Trim()).ToArray()
+                              )).ToList();
             return new HashSet<PackageDependency>(dependency);
         }
 
@@ -341,7 +364,7 @@ namespace NuGet.Packaging
                 var exclude = file.GetOptionalAttributeValue("exclude").SafeTrim();
 
                 // Multiple sources can be specified by using semi-colon separated values. 
-                files.AddRange(srcElement.Value.Trim(';').Split(';').Select(s => 
+                files.AddRange(srcElement.Value.Trim(';').Split(';').Select(s =>
                     new ManifestFile
                     {
                         Source = s.SafeTrim(),

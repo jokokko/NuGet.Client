@@ -39,6 +39,7 @@ namespace NuGet.Packaging
         private const string ExcludeFlags = "exclude";
         private const string LicenseUrl = "licenseUrl";
         private const string Repository = "repository";
+        private const string License = "license";
         private static readonly char[] CommaArray = new char[] { ',' };
         private readonly IFrameworkNameProvider _frameworkProvider;
 
@@ -411,12 +412,37 @@ namespace NuGet.Packaging
             return repository;
         }
 
+
+        public LicenseMetadata GetLicenseMedata()
+        {
+            var ns = MetadataNode.GetDefaultNamespace().NamespaceName;
+            var licenseNode = MetadataNode.Elements(XName.Get(License, ns)).FirstOrDefault();
+
+            if (licenseNode != null)
+            {
+                var src = licenseNode.Attribute(NuspecUtility.Src)?.Value;
+                var expression = licenseNode.Attribute(NuspecUtility.LicenseExpression)?.Value;
+
+                var expressionHasValue = string.IsNullOrEmpty(expression);
+                var isSrcNullOrEmpty = string.IsNullOrEmpty(src);
+                
+                if ( (expressionHasValue && isSrcNullOrEmpty) || (!expressionHasValue && !expressionHasValue))
+                {
+
+                    throw new PackagingException("Invalid nuspec entry. Only file or licensexpression can be specified.");
+                }
+                return new LicenseMetadata(licenseExpression: expression, src: src);
+            }
+
+            return null;
+        }
+
         /// <summary>
         /// Require license acceptance when installing the package.
         /// </summary>
         public bool GetRequireLicenseAcceptance()
         {
-            return StringComparer.OrdinalIgnoreCase.Equals(Boolean.TrueString, GetMetadataValue("requireLicenseAcceptance"));
+            return StringComparer.OrdinalIgnoreCase.Equals(bool.TrueString, GetMetadataValue("requireLicenseAcceptance"));
         }
 
         private static bool? AttributeAsNullableBool(XElement element, string attributeName)
@@ -427,11 +453,11 @@ namespace NuGet.Packaging
 
             if (attributeValue != null)
             {
-                if (Boolean.TrueString.Equals(attributeValue, StringComparison.OrdinalIgnoreCase))
+                if (bool.TrueString.Equals(attributeValue, StringComparison.OrdinalIgnoreCase))
                 {
                     result = true;
                 }
-                else if (Boolean.FalseString.Equals(attributeValue, StringComparison.OrdinalIgnoreCase))
+                else if (bool.FalseString.Equals(attributeValue, StringComparison.OrdinalIgnoreCase))
                 {
                     result = false;
                 }

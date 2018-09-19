@@ -56,6 +56,7 @@ namespace NuGet.Packaging
             ContentFiles = copy.ContentFiles;
             DevelopmentDependency = copy.DevelopmentDependency;
             Repository = copy.Repository;
+            LicenseMetadata = copy.LicenseMetadata;
         }
 
         [ManifestVersion(5)]
@@ -229,6 +230,8 @@ namespace NuGet.Packaging
         public IEnumerable<ManifestContentFiles> ContentFiles { get; set; } = new List<ManifestContentFiles>();
         
         public IEnumerable<PackageType> PackageTypes { get; set; } = new List<PackageType>();
+
+        public LicenseMetadata LicenseMetadata { get; set; } = null;
 
         private static IEnumerable<PackageDependencyGroup> MergeDependencyGroups(IEnumerable<PackageDependencyGroup> actualDependencyGroups)
         {

@@ -40,7 +40,7 @@
         </xs:sequence>
         <xs:attribute name="targetFramework" type="xs:string" use="optional" />
     </xs:complexType>
-    
+
     <xs:element name="package">
         <xs:complexType>
             <xs:sequence>
@@ -70,6 +70,12 @@
                                 <xs:attribute name="url" type="xs:anyURI" use="optional" />
                                 <xs:attribute name="branch" type="xs:string" use="optional" />
                                 <xs:attribute name="commit" type="xs:string" use="optional" />
+                              </xs:complexType>
+                            </xs:element>
+                            <xs:element name="license" maxOccurs="1" minOccurs="0">
+                              <xs:complexType>
+                                <xs:attribute name="expression" type="xs:string"/>
+                                <xs:attribute name="src" type="xs:string"/>
                               </xs:complexType>
                             </xs:element>
                             <xs:element name="packageTypes" maxOccurs="1" minOccurs="0">

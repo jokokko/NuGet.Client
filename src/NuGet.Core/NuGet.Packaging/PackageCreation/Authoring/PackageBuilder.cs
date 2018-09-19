@@ -94,6 +94,8 @@ namespace NuGet.Packaging
 
         public RepositoryMetadata Repository { get; set; }
 
+        public LicenseMetadata LicenseMetadata { get; set; }
+
         public bool HasSnapshotVersion
         {
             get;
@@ -519,6 +521,7 @@ namespace NuGet.Packaging
             MinClientVersion = metadata.MinClientVersion;
             Repository = metadata.Repository;
             ContentFiles = new Collection<ManifestContentFiles>(manifestMetadata.ContentFiles.ToList());
+            LicenseMetadata = metadata.LicenseMetadata;
 
             if (metadata.Tags != null)
             {
@@ -549,15 +552,15 @@ namespace NuGet.Packaging
 
         private void WriteManifest(ZipArchive package, int minimumManifestVersion, string psmdcpPath)
         {
-            string path = Id + PackagingConstants.ManifestExtension;
+            var path = Id + PackagingConstants.ManifestExtension;
 
             WriteOpcManifestRelationship(package, path, psmdcpPath);
 
-            ZipArchiveEntry entry = package.CreateEntry(path, CompressionLevel.Optimal);
+            var entry = package.CreateEntry(path, CompressionLevel.Optimal);
 
-            using (Stream stream = entry.Open())
+            using (var stream = entry.Open())
             {
-                Manifest manifest = Manifest.Create(this);
+                var manifest = Manifest.Create(this);
                 manifest.Save(stream, minimumManifestVersion);
             }
         }

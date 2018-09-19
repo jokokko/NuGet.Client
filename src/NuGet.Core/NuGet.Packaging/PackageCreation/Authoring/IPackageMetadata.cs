@@ -28,7 +28,6 @@ namespace NuGet.Packaging
         string Tags { get; }
         bool Serviceable { get; }
         string Copyright { get; }
-
         /// <summary>
         /// Specifies assemblies from GAC that the package depends on.
         /// </summary>
@@ -54,5 +53,7 @@ namespace NuGet.Packaging
         IEnumerable<PackageType> PackageTypes { get; }
 
         RepositoryMetadata Repository { get; }
+
+        LicenseMetadata LicenseMetadata { get; }
     }
 }

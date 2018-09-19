@@ -35,12 +35,12 @@ namespace NuGet.Packaging.Xml
             elem.Add(new XElement(ns + "id", metadata.Id));
             AddElementIfNotNull(elem, ns, "version", metadata.Version?.ToFullString());
             AddElementIfNotNull(elem, ns, "title", metadata.Title);
-            if(!metadata.PackageTypes.Contains(PackageType.SymbolsPackage))
+            if (!metadata.PackageTypes.Contains(PackageType.SymbolsPackage))
             {
                 AddElementIfNotNull(elem, ns, "authors", metadata.Authors, authors => string.Join(",", authors));
                 AddElementIfNotNull(elem, ns, "owners", metadata.Owners, owners => string.Join(",", owners));
             }
-            
+
             elem.Add(new XElement(ns + "requireLicenseAcceptance", metadata.RequireLicenseAcceptance));
             if (metadata.DevelopmentDependency)
             {
@@ -74,10 +74,19 @@ namespace NuGet.Packaging.Xml
                 }
             }
 
+            if (metadata.LicenseMetadata != null)
+            {
+                var licenseElement = GetXElementFromLicenseMetadata(ns, metadata.LicenseMetadata);
+                if (licenseElement != null)
+                {
+                    elem.Add(licenseElement);
+                }
+            }
+
             elem.Add(GetXElementFromGroupableItemSets(
                 ns,
                 metadata.DependencyGroups,
-                set => set.TargetFramework.IsSpecificFramework || 
+                set => set.TargetFramework.IsSpecificFramework ||
                        set.Packages.Any(dependency => dependency.Exclude.Count > 0 || dependency.Include.Count > 0),
                 set => set.TargetFramework.IsSpecificFramework ? set.TargetFramework.GetFrameworkString() : null,
                 set => set.Packages,
@@ -232,6 +241,18 @@ namespace NuGet.Packaging.Xml
             attributes = attributes.Where(xAtt => xAtt != null).ToList();
 
             return new XElement(ns + Files, attributes);
+        }
+
+        private static XElement GetXElementFromLicenseMetadata(XNamespace ns, LicenseMetadata metadata)
+        {
+            var attributes = new List<XAttribute>();
+
+            attributes.Add(GetXAttributeFromNameAndValue(NuspecUtility.LicenseExpression, metadata.LicenseExpression));
+            attributes.Add(GetXAttributeFromNameAndValue(NuspecUtility.Src, metadata.Src));
+
+            attributes = attributes.Where(xAtt => xAtt != null).ToList();
+
+            return new XElement(ns + NuspecUtility.License, attributes);
         }
 
         private static XElement GetXElementFromManifestRepository(XNamespace ns, RepositoryMetadata repository)
