@@ -84,7 +84,7 @@ namespace NuGet.Packaging
                         manifestMetadata.Id = value;
                         break;
                     case "version":
-                        manifestMetadata.Version = NuGetVersion.Parse(value);
+                        manifestMetadata.Version = NuGetVersion.Parse(value); // TODO NK - This probably throws if the version is invalid. 
                         break;
                     case "authors":
                         manifestMetadata.Authors = value?.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);

@@ -171,6 +171,13 @@ namespace NuGet.Build.Tasks.Pack
                     request.RepositoryBranch,
                     request.RepositoryCommit);
             }
+
+            if (!string.IsNullOrEmpty(request.PackageLicenseExpression) || !string.IsNullOrEmpty(request.PackageLicenseFile))
+            {
+                // TODO NK - Do the parser validation here.
+                builder.LicenseMetadata = new LicenseMetadata(request.PackageLicenseExpression, request.PackageLicenseFile);
+            }
+
             if (request.MinClientVersion != null)
             {
                 Version version;

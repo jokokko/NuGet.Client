@@ -336,6 +336,7 @@ namespace NuGet.Packaging
 
             ValidateDependencies(Version, DependencyGroups);
             ValidateReferenceAssemblies(Files, PackageAssemblyReferences);
+            ValidateLicenseFile(Files, LicenseMetadata);
 
             using (var package = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true))
             {
@@ -474,6 +475,21 @@ namespace NuGet.Packaging
                     !libFiles.Contains(reference + ".winmd"))
                 {
                     throw new PackagingException(NuGetLogCode.NU5018, String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_InvalidReference, reference));
+                }
+            }
+        }
+
+        public static void ValidateLicenseFile(IEnumerable<IPackageFile> files, LicenseMetadata licenseMetadata)
+        {
+            if(licenseMetadata.Src != null)
+            {
+                // TODO NK - Ask Rohit about case sensitivity.
+                // Here I can also validate that the extensions are correct.
+                var count = files.Where(e => e.Path.Equals(licenseMetadata.Src, StringComparison.OrdinalIgnoreCase)).Count();
+                if(count == 0)
+                {
+                    // new log code.
+                    throw new PackagingException(NuGetLogCode.NU5018,"The license file specified in the metadata does not exist in the package.");
                 }
             }
         }
